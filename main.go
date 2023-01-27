@@ -12,8 +12,9 @@ import (
 )
 
 const (
-	expectedState = "running"
-	cmdFormat     = "pw-cli i %d | grep state"
+	expectedState  = "running"
+	cmdIDFormat    = "pw-cli ls | grep -B10 '%s'"
+	cmdStateFormat = "pw-cli i %d | grep state"
 )
 
 func main() {
@@ -34,24 +35,20 @@ func main() {
 	if !ok {
 		panic("MQTT_PASSWORD unset")
 	}
-	strDeviceID, ok := os.LookupEnv("PW_DEVICE_ID")
+	nodeName, ok := os.LookupEnv("PW_NODE_NAME")
 	if !ok {
-		panic("PW_DEVICE_ID unset")
+		panic("PW_NODE_NAME unset")
 	}
-	deviceID, err := strconv.Atoi(strDeviceID)
-	if err != nil {
-		panic(fmt.Sprintf("Error converting device ID: %v", err))
-	}
-
 	// Make an mqtt client
-	fmt.Printf("Connecting to tcp://%s:%s as %s", mqttHost, mqttPort, mqttUsername)
+	print("Connecting to tcp://%s:%s as %s", mqttHost, mqttPort, mqttUsername)
 	mqtt := NewMqtt(mqttHost, mqttPort, mqttUsername, mqttPassword)
 	if token := mqtt.client.Connect(); token.Wait() && token.Error() != nil {
 		panic(token.Error())
 	}
 
-	// Prepare meeting regexp
+	// Prepare regexps
 	stateRegexp := regexp.MustCompile(`.*"(.+)".*`)
+	deviceIDRegexp := regexp.MustCompile(`id (\d+), `)
 
 	// Check for meeting every second
 	ticker := time.NewTicker(time.Second)
@@ -69,6 +66,10 @@ func main() {
 	for {
 		select {
 		case <-ticker.C:
+			deviceID, err := findPipeWireDeviceByName(nodeName, deviceIDRegexp)
+			if err != nil {
+				print(err)
+			}
 			meetingFound := checkPipeWireDeviceStatus(deviceID, stateRegexp)
 			if mqtt.State != meetingFound {
 				mqtt.setState(meetingFound)
@@ -81,8 +82,27 @@ func main() {
 	}
 }
 
+func findPipeWireDeviceByName(nodeName string, deviceIDRegexp *regexp.Regexp) (int, error) {
+	cmd := fmt.Sprintf(cmdIDFormat, nodeName)
+	out, err := exec.Command("/bin/sh", "-c", cmd).Output()
+	if err != nil {
+		return 0, fmt.Errorf("failed to run command to find device ID by node name")
+	}
+	regexpMatch := deviceIDRegexp.FindStringSubmatch(string(out))
+	if len(regexpMatch) < 2 {
+		return 0, fmt.Errorf("failed to find device ID by node name in output")
+	}
+	strDeviceID := regexpMatch[1]
+	deviceID, err := strconv.Atoi(strDeviceID)
+	if err != nil {
+		return 0, fmt.Errorf("error converting device ID: %v", err)
+	}
+	return deviceID, nil
+
+}
+
 func checkPipeWireDeviceStatus(deviceID int, stateRegexp *regexp.Regexp) bool {
-	out, err := exec.Command("/bin/sh", "-c", fmt.Sprintf(cmdFormat, deviceID)).Output()
+	out, err := exec.Command("/bin/sh", "-c", fmt.Sprintf(cmdStateFormat, deviceID)).Output()
 	if err != nil {
 		return false
 	}
