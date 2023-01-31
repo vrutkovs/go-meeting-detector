@@ -71,8 +71,8 @@ func main() {
 				print(err)
 			}
 			meetingFound := checkPipeWireDeviceStatus(deviceID, stateRegexp)
-			if mqtt.State != meetingFound {
-				mqtt.setState(meetingFound)
+			if err := toggleMode(mqtt, meetingFound); err != nil {
+				print(err)
 			}
 		case <-quit:
 			mqtt.client.Disconnect(250)
@@ -80,6 +80,16 @@ func main() {
 			return
 		}
 	}
+}
+
+func toggleMode(mqtt *Mqtt, meetingFound bool) error {
+	if mqtt.State != meetingFound {
+		mqtt.setState(meetingFound)
+		args := []string{"set", "org.gnome.desktop.notifications", "show-banners", strconv.FormatBool(!meetingFound)}
+		_, err := exec.Command("gsettings", args...).Output()
+		return err
+	}
+	return nil
 }
 
 func findPipeWireDeviceByName(nodeName string, deviceIDRegexp *regexp.Regexp) (int, error) {
