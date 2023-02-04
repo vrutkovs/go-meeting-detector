@@ -17,6 +17,8 @@ const (
 	cmdStateFormat = "pw-cli i %d | grep state"
 )
 
+var gsettingsArgs = []string{"set", "org.gnome.desktop.notifications", "show-banners"}
+
 func main() {
 	// Read env vars
 	mqttHost, ok := os.LookupEnv("MQTT_HOST")
@@ -89,7 +91,9 @@ func main() {
 func toggleMode(mqtt *Mqtt, topic string, meetingFound bool) error {
 	if mqtt.State != meetingFound {
 		mqtt.setState(topic, meetingFound)
-		args := []string{"set", "org.gnome.desktop.notifications", "show-banners", strconv.FormatBool(!meetingFound)}
+		args := []string{}
+		copy(gsettingsArgs, args)
+		args = append(args, strconv.FormatBool(!meetingFound))
 		_, err := exec.Command("gsettings", args...).Output()
 		return err
 	}
