@@ -11,10 +11,6 @@ var BoolToMQTT = map[bool]string{
 	false: "OFF",
 }
 
-const (
-	TOPIC = "finn/meeting_active/state"
-)
-
 type Mqtt struct {
 	State  bool
 	client mqtt.Client
@@ -36,7 +32,7 @@ type State struct {
 	State string `json:"state"`
 }
 
-func (m *Mqtt) setState(newState bool) {
+func (m *Mqtt) setState(topic string, newState bool) {
 	if newState {
 		fmt.Printf("Meeting detected")
 	} else {
@@ -44,6 +40,6 @@ func (m *Mqtt) setState(newState bool) {
 	}
 
 	m.State = newState
-	token := m.client.Publish(TOPIC, 0, true, BoolToMQTT[m.State])
+	token := m.client.Publish(topic, 0, true, BoolToMQTT[m.State])
 	token.Wait()
 }

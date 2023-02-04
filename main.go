@@ -35,6 +35,10 @@ func main() {
 	if !ok {
 		panic("MQTT_PASSWORD unset")
 	}
+	mqttTopic, ok := os.LookupEnv("MQTT_TOPIC")
+	if !ok {
+		panic("MQTT_TOPIC unset")
+	}
 	nodeName, ok := os.LookupEnv("PW_NODE_NAME")
 	if !ok {
 		panic("PW_NODE_NAME unset")
@@ -71,7 +75,7 @@ func main() {
 				print(err)
 			}
 			meetingFound := checkPipeWireDeviceStatus(deviceID, stateRegexp)
-			if err := toggleMode(mqtt, meetingFound); err != nil {
+			if err := toggleMode(mqtt, mqttTopic, meetingFound); err != nil {
 				print(err)
 			}
 		case <-quit:
@@ -82,9 +86,9 @@ func main() {
 	}
 }
 
-func toggleMode(mqtt *Mqtt, meetingFound bool) error {
+func toggleMode(mqtt *Mqtt, topic string, meetingFound bool) error {
 	if mqtt.State != meetingFound {
-		mqtt.setState(meetingFound)
+		mqtt.setState(topic, meetingFound)
 		args := []string{"set", "org.gnome.desktop.notifications", "show-banners", strconv.FormatBool(!meetingFound)}
 		_, err := exec.Command("gsettings", args...).Output()
 		return err
