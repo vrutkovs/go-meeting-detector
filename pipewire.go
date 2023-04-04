@@ -26,14 +26,13 @@ func findPipeWireDeviceByName(nodeName string, deviceIDRegexp *regexp.Regexp) (i
 	strDeviceID := regexpMatch[1]
 	deviceID, err := strconv.Atoi(strDeviceID)
 	if err != nil {
-		return 0, fmt.Errorf("error converting device ID: %v", err)
+		return 0, fmt.Errorf("error converting device ID: %w", err)
 	}
 	return deviceID, nil
-
 }
 
 func checkPipeWireDeviceStatus(deviceID int, stateRegexp *regexp.Regexp) bool {
-	out, err := exec.Command("/bin/sh", "-c", fmt.Sprintf(cmdStateFormat, deviceID)).Output()
+	out, err := exec.Command("/bin/sh", "-c", fmt.Sprintf(cmdStateFormat, deviceID)).Output() // #nosec G204
 	if err != nil {
 		return false
 	}
@@ -43,5 +42,4 @@ func checkPipeWireDeviceStatus(deviceID int, stateRegexp *regexp.Regexp) bool {
 	}
 	state := regexpMatch[1]
 	return state == expectedState
-
 }
