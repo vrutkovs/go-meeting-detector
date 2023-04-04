@@ -57,7 +57,7 @@ func main() {
 		close(quit)
 		os.Exit(1)
 	}()
-  
+
 	for {
 		select {
 		case <-ticker.C:
