@@ -1,9 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"os/signal"
-	"regexp"
 	"syscall"
 	"time"
 )
@@ -35,15 +35,11 @@ func main() {
 		panic("PW_NODE_NAME unset")
 	}
 	// Make an mqtt client
-	print("Connecting to tcp://%s:%s as %s", mqttHost, mqttPort, mqttUsername)
+	fmt.Printf("Connecting to tcp://%s:%s as %s\n", mqttHost, mqttPort, mqttUsername)
 	mqtt := NewMqtt(mqttHost, mqttPort, mqttUsername, mqttPassword)
 	if token := mqtt.client.Connect(); token.Wait() && token.Error() != nil {
 		panic(token.Error())
 	}
-
-	// Prepare regexps
-	stateRegexp := regexp.MustCompile(`.*"(.+)".*`)
-	deviceIDRegexp := regexp.MustCompile(`id (\d+), `)
 
 	// Check for meeting every second
 	ticker := time.NewTicker(time.Second)
@@ -58,14 +54,16 @@ func main() {
 		os.Exit(1)
 	}()
 
+	fmt.Printf("Waiting for Pipewire events")
+
 	for {
 		select {
 		case <-ticker.C:
-			deviceID, err := findPipeWireDeviceByName(nodeName, deviceIDRegexp)
+			deviceID, err := findPipeWireDeviceByName(nodeName)
 			if err != nil {
 				print(err)
 			}
-			meetingFound := checkPipeWireDeviceStatus(deviceID, stateRegexp)
+			meetingFound := checkPipeWireDeviceStatus(deviceID)
 			if err := toggleMode(mqtt, mqttTopic, meetingFound); err != nil {
 				print(err)
 			}
