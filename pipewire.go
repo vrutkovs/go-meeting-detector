@@ -124,7 +124,7 @@ func (c *PipeWireClient) checkDeviceStatus(deviceID int) (bool, error) {
 	// Extract the state using the pre-compiled regex.
 	regexpMatch := c.stateRegexp.FindStringSubmatch(string(out))
 	if len(regexpMatch) < 2 {
-		c.logger.Error("failed to find state for device ID in output", "deviceID", deviceID, "output", string(out))
+		c.logger.Debug("failed to find state for device ID in output", "deviceID", deviceID, "output", string(out))
 		return false, fmt.Errorf("failed to find state for device ID %d in PipeWire output", deviceID)
 	}
 
@@ -156,12 +156,12 @@ func checkPipeWireDeviceStatus(deviceID int) bool {
 	// A default logger can be used here or a more specific one passed down from main
 	pc, err := NewPipeWireClient(slog.Default())
 	if err != nil {
-		slog.Error("error creating PipeWireClient", "error", err)
+		slog.Debug("error creating PipeWireClient", "error", err)
 		return false
 	}
 	status, err := pc.checkDeviceStatus(deviceID)
 	if err != nil {
-		slog.Error("error checking PipeWire device status", "deviceID", deviceID, "error", err)
+		slog.Debug("error checking PipeWire device status", "deviceID", deviceID, "error", err)
 		return false
 	}
 	return status
