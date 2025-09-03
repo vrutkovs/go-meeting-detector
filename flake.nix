@@ -99,7 +99,7 @@
             echo "Go Meeting Detector development environment"
             echo "Available tools:"
             echo "  go version: $(go version)"
-            echo "  golangci-lint version: $(golangci-lint version --format short)"
+            echo "  golangci-lint version: $(golangci-lint version --short 2>/dev/null || echo 'not found')"
             echo ""
             echo "Runtime dependencies available:"
             echo "  pipewire: $(pipewire --version 2>/dev/null || echo 'not found')"
