@@ -101,7 +101,7 @@ func (c *PipeWireClient) findDeviceIDByName(nodeName string) (int, error) {
 		return 0, fmt.Errorf("error converting extracted device ID '%s' to integer: %w", strDeviceID, err)
 	}
 
-	c.logger.Info("Successfully found PipeWire device ID", "nodeName", nodeName, "deviceID", deviceID)
+	c.logger.Debug("Successfully found PipeWire device ID", "nodeName", nodeName, "deviceID", deviceID)
 	return deviceID, nil
 }
 
@@ -130,11 +130,11 @@ func (c *PipeWireClient) checkDeviceStatus(deviceID int) (bool, error) {
 
 	state := regexpMatch[1]
 	if state == expectedState {
-		c.logger.Info("PipeWire device is in expected state", "deviceID", deviceID, "currentState", state, "expectedState", expectedState)
+		c.logger.Debug("PipeWire device is in expected state", "deviceID", deviceID, "currentState", state, "expectedState", expectedState)
 		return true, nil
 	}
 
-	c.logger.Info("PipeWire device is NOT in expected state", "deviceID", deviceID, "currentState", state, "expectedState", expectedState)
+	c.logger.Debug("PipeWire device is NOT in expected state", "deviceID", deviceID, "currentState", state, "expectedState", expectedState)
 	return false, nil
 }
 

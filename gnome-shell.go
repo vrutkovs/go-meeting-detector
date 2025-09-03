@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log/slog"
 	"os/exec"
 	"strconv"
 )
@@ -8,9 +9,10 @@ import (
 var gsettingsArgs = []string{"set", "org.gnome.desktop.notifications", "show-banners"}
 
 func setGnomeShellDNDStatus(meetingFound bool) error {
+	logger := slog.Default()
 	args := []string{}
-	copy(gsettingsArgs, args)
-	args = append(args, strconv.FormatBool(!meetingFound))
+	args = append(gsettingsArgs, strconv.FormatBool(!meetingFound))
+	logger.Debug("Setting Gnome Shell DND status", "cmd", "gsettings", "args", args, "status", meetingFound)
 	_, err := exec.Command("gsettings", args...).Output()
 	return err
 }
