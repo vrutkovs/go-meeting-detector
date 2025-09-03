@@ -87,7 +87,6 @@ func main() {
 			logger.Debug("ticker ticked, checking PipeWire device status")
 			deviceID, err := findPipeWireDeviceByName(nodeName)
 			if err != nil {
-				logger.Error("failed to find PipeWire device", "nodeName", nodeName, "error", err)
 				// Continue to next tick even if device not found to retry
 				continue
 			}

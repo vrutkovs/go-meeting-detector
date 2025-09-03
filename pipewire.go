@@ -56,10 +56,10 @@ func (c *PipeWireClient) findDeviceIDByName(nodeName string) (int, error) {
 	outputBytes, err := cmd.Output()
 	if err != nil {
 		if exitError, ok := err.(*exec.ExitError); ok {
-			c.logger.Error("failed to run 'pw-cli ls'", "error", err, "stderr", string(exitError.Stderr))
+			c.logger.Debug("failed to run 'pw-cli ls'", "error", err, "stderr", string(exitError.Stderr))
 			return 0, fmt.Errorf("failed to run 'pw-cli ls': %w, stderr: %s", err, exitError.Stderr)
 		}
-		c.logger.Error("failed to run 'pw-cli ls'", "error", err)
+		c.logger.Debug("failed to run 'pw-cli ls'", "error", err)
 		return 0, fmt.Errorf("failed to run 'pw-cli ls': %w", err)
 	}
 
@@ -83,21 +83,21 @@ func (c *PipeWireClient) findDeviceIDByName(nodeName string) (int, error) {
 	}
 
 	if !found {
-		c.logger.Info("node with name not found", "nodeName", nodeName)
+		c.logger.Debug("node with name not found", "nodeName", nodeName)
 		return 0, fmt.Errorf("node with name '%s' not found in PipeWire output", nodeName)
 	}
 
 	// Extract the device ID using the pre-compiled regex.
 	regexpMatch := c.deviceIDRegexp.FindStringSubmatch(strings.Join(relevantOutput, "\n"))
 	if len(regexpMatch) < 2 {
-		c.logger.Error("failed to extract device ID", "nodeName", nodeName, "output", strings.Join(relevantOutput, "\n"))
+		c.logger.Debug("failed to extract device ID", "nodeName", nodeName, "output", strings.Join(relevantOutput, "\n"))
 		return 0, fmt.Errorf("failed to extract device ID for node '%s' from PipeWire output", nodeName)
 	}
 
 	strDeviceID := regexpMatch[1]
 	deviceID, err := strconv.Atoi(strDeviceID)
 	if err != nil {
-		c.logger.Error("error converting device ID to integer", "strDeviceID", strDeviceID, "error", err)
+		c.logger.Debug("error converting device ID to integer", "strDeviceID", strDeviceID, "error", err)
 		return 0, fmt.Errorf("error converting extracted device ID '%s' to integer: %w", strDeviceID, err)
 	}
 
