@@ -140,18 +140,6 @@ The application uses structured logging with the following log levels:
 - **Warn**: Non-critical issues (device not found temporarily)
 - **Error**: Errors that need attention (connection failures, command errors)
 
-### Log Output Example
-
-```json
-{
-  "time": "2024-01-15T10:30:45.123Z",
-  "level": "INFO",
-  "msg": "Successfully found PipeWire device ID",
-  "nodeName": "alsa_input.usb-Blue_Microphones_Yeti_Stereo_Microphone",
-  "deviceID": 42
-}
-```
-
 ## Architecture
 
 ### Core Components
