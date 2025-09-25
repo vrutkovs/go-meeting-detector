@@ -33,7 +33,7 @@ func NewPipeWireClient(logger *slog.Logger) (*PipeWireClient, error) {
 		logger.Error("failed to compile device ID regex", "error", err)
 		return nil, fmt.Errorf("failed to compile device ID regex: %w", err)
 	}
-	stateRegexp, err := regexp.Compile(`state: ([a-z]+)`)
+	stateRegexp, err := regexp.Compile(`.*state: \"([a-z]+)\".*`)
 	if err != nil {
 		logger.Error("failed to compile state regex", "error", err)
 		return nil, fmt.Errorf("failed to compile state regex: %w", err)
